@@ -23,10 +23,27 @@ def load_json(path: Path):
         return json.load(f)
 
 
+def extract_records(data, preferred_keys=("posts", "candidates", "items", "records")) -> list[dict]:
+    if isinstance(data, list):
+        return [item for item in data if isinstance(item, dict)]
+
+    if isinstance(data, dict):
+        for key in preferred_keys:
+            value = data.get(key)
+            if isinstance(value, list):
+                return [item for item in value if isinstance(item, dict)]
+
+    return []
+
+
 def resolve_media_path(item: dict) -> Path | None:
+    if not isinstance(item, dict):
+        return None
+
     raw = item.get("media_path") or item.get("media") or item.get("file")
     if not raw:
         return None
+
     p = Path(raw)
     if not p.is_absolute():
         p = Path.cwd() / p
@@ -37,8 +54,14 @@ def main():
     if not CANDIDATES_INDEX.exists():
         raise SystemExit(f"[ERROR] Missing {CANDIDATES_INDEX}")
 
-    candidates = load_json(CANDIDATES_INDEX)
-    references = load_json(REFERENCES_INDEX) if REFERENCES_INDEX.exists() else []
+    candidates_raw = load_json(CANDIDATES_INDEX)
+    references_raw = load_json(REFERENCES_INDEX) if REFERENCES_INDEX.exists() else []
+
+    candidates = extract_records(candidates_raw)
+    references = extract_records(references_raw)
+
+    if not candidates:
+        raise SystemExit(f"[ERROR] No candidate records found in {CANDIDATES_INDEX}")
 
     reference_hashes = set()
     reference_files = 0
