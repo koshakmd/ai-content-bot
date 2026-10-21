@@ -14,6 +14,7 @@ from pathlib import Path
 
 try:
     import cv2
+    import numpy as np
 except ImportError:
     raise SystemExit("[ERROR] Missing opencv-python. Install it with: py -m pip install opencv-python")
 
@@ -80,7 +81,15 @@ def extract_video_frames(media: Path, out_dir: Path) -> list[str]:
 
 
 def prepare_photo(media: Path, out_dir: Path) -> list[str]:
-    frame = cv2.imread(str(media))
+    # cv2.imread can fail on Windows paths containing Cyrillic characters.
+    # Reading raw bytes first keeps Unicode paths working reliably.
+    try:
+        raw = np.fromfile(str(media), dtype=np.uint8)
+    except OSError:
+        return []
+    if raw.size == 0:
+        return []
+    frame = cv2.imdecode(raw, cv2.IMREAD_COLOR)
     if frame is None:
         return []
     dest = out_dir / "frame_01.jpg"
