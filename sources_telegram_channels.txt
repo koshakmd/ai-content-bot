@@ -1,0 +1,10 @@
+# Starter donor pool for «Нормально же общались»
+# One public Telegram channel URL per line.
+# Keep this list small while we measure signal/noise and ad density.
+
+https://t.me/creative
+https://t.me/video_dolboeba
+https://t.me/memsheroes
+https://t.me/tgPrikoli
+https://t.me/tgVideoP
+https://t.me/Ugarnye_video_prikoly
